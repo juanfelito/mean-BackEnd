@@ -160,10 +160,39 @@ function getImageFile(req, res){
         }
     });
 }
+
+function getUserPosts(req, res){
+    var page = 1;
+    var id = req.user.sub;
+    if(req.params.page){
+        page = req.params.page;
+    }
+    if(req.params.id) {
+        id = req.params.id;
+    }
+
+    var itemsPerPage = 4;
+        
+    Post.find({'user': id}).sort('-created_at').populate('user').paginate(page,itemsPerPage,(err, posts, total) => {
+        if(err) return res.status(500).send({message: 'Error al devolver publicaciones'});
+
+        if(!posts) return res.status(404).send({message: 'No ha publicaciones'});
+
+        return res.status(200).send({
+            totalItems: total,
+            pages: Math.ceil(total/itemsPerPage),
+            page: page,
+            itemsPerPage: itemsPerPage,
+            posts
+        });
+    });
+   
+}
 module.exports = {
     probando,
     savePost,
     getPosts,
+    getUserPosts,
     getpost,
     deletePost,
     uploadImage,
